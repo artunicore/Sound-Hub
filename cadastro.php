@@ -1,6 +1,36 @@
 
+
 <?php
 include 'includes/navbar.php';
+include 'db.php';
+
+$msg = "";
+if ($_SERVER['REQUEST_METHOD'] === 'POST') {
+    $usuario = trim($_POST['usuario']);
+    $email = trim($_POST['email']);
+    $senha = $_POST['senha'];
+    $senha2 = $_POST['senha2'];
+    $termo = isset($_POST['termo']) ? 1 : 0;
+
+    if ($senha !== $senha2) {
+        $msg = '<div class="alert alert-danger">As senhas não coincidem.</div>';
+    } else {
+        $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
+        $sql = "INSERT INTO usuarios (usuario, email, senha, aceitou_termos) VALUES (?, ?, ?, ?)";
+        $stmt = $conn->prepare($sql);
+        if ($stmt) {
+            $stmt->bind_param("sssi", $usuario, $email, $senha_hash, $termo);
+            if ($stmt->execute()) {
+                $msg = '<div class="alert alert-success">Cadastro realizado com sucesso!</div>';
+            } else {
+                $msg = '<div class="alert alert-danger">Erro ao cadastrar: ' . $stmt->error . '</div>';
+            }
+            $stmt->close();
+        } else {
+            $msg = '<div class="alert alert-danger">Erro na preparação da query.</div>';
+        }
+    }
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -40,6 +70,7 @@ include 'includes/navbar.php';
 <body>
     <div class="card-cadastro">
         <h2 class="text-center mb-4">Cadastro</h2>
+        <?php echo $msg; ?>
         <form action="cadastro.php" method="post">
             <div class="mb-3">
                 <label for="usuario" class="form-label">Usuário</label>

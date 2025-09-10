@@ -1,5 +1,47 @@
+
 <?php
+session_start();
 include 'includes/navbar.php';
+include 'db.php';
+$msg = "";
+if (!isset($_SESSION['usuario_id'])) {
+    header('Location: login.php');
+    exit;
+}
+
+if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['estilos'])) {
+    $usuario_id = $_SESSION['usuario_id'];
+    $estilos = $_POST['estilos'];
+    // Remove gostos antigos
+    $conn->query("DELETE FROM gostos WHERE usuario_id = $usuario_id");
+    // Insere novos gostos
+    $stmt = $conn->prepare("INSERT INTO gostos (usuario_id, estilo) VALUES (?, ?)");
+    foreach ($estilos as $estilo) {
+        $stmt->bind_param("is", $usuario_id, $estilo);
+        $stmt->execute();
+    }
+    $stmt->close();
+    $msg = '<div class="alert alert-success">Estilos salvos com sucesso!</div>';
+}
+
+// Estilos disponíveis
+$estilos_lista = [
+    'rock' => 'Rock',
+    'metal melódico' => 'Metal Melódico',
+    'funk submundo' => 'Funk Submundo',
+    'funk proibidão' => 'Funk Proibidão',
+    'trap' => 'Trap',
+    'hardbass' => 'Hardbass',
+    'hardcore melódico' => 'Hardcore Melódico'
+];
+
+// Buscar gostos já salvos
+$gostos_salvos = [];
+$usuario_id = $_SESSION['usuario_id'];
+$res = $conn->query("SELECT estilo FROM gostos WHERE usuario_id = $usuario_id");
+while ($row = $res->fetch_assoc()) {
+    $gostos_salvos[] = $row['estilo'];
+}
 ?>
 <!DOCTYPE html>
 <html lang="pt-br">
@@ -8,40 +50,46 @@ include 'includes/navbar.php';
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Estilos Musicais - SoundHub</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background: linear-gradient(135deg, #23234a 0%, #1e1e2f 100%);
+            color: #fff;
+        }
+        .card-estilos {
+            background: rgba(35,35,74,0.97);
+            border-radius: 2rem;
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+            margin-top: 3rem;
+            padding: 2.5rem 2rem;
+            max-width: 500px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        .form-check-label {
+            color: #b3b3ff;
+        }
+        .btn-estilos {
+            font-size: 1.1rem;
+            padding: 0.6rem 2rem;
+            border-radius: 2rem;
+        }
+    </style>
 </head>
 <body>
-    <div class="container mt-5">
-        <h2>Selecione seus estilos favoritos</h2>
+    <div class="card-estilos">
+        <h2 class="text-center mb-4">Selecione seus estilos favoritos</h2>
+        <?php echo $msg; ?>
         <form action="estilos.php" method="post">
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="estilos[]" value="rock" id="rock">
-                <label class="form-check-label" for="rock">Rock</label>
+            <?php foreach ($estilos_lista as $key => $label): ?>
+                <div class="form-check">
+                    <input class="form-check-input" type="checkbox" name="estilos[]" value="<?php echo $key; ?>" id="<?php echo $key; ?>"
+                        <?php if (in_array($key, $gostos_salvos)) echo 'checked'; ?>>
+                    <label class="form-check-label" for="<?php echo $key; ?>"><?php echo $label; ?></label>
+                </div>
+            <?php endforeach; ?>
+            <div class="d-grid gap-2 mt-4">
+                <button type="submit" class="btn btn-primary btn-estilos">Salvar estilos</button>
             </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="estilos[]" value="metal melódico" id="metal">
-                <label class="form-check-label" for="metal">Metal Melódico</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="estilos[]" value="funk submundo" id="funksub">
-                <label class="form-check-label" for="funksub">Funk Submundo</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="estilos[]" value="funk proibidão" id="funkproib">
-                <label class="form-check-label" for="funkproib">Funk Proibidão</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="estilos[]" value="trap" id="trap">
-                <label class="form-check-label" for="trap">Trap</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="estilos[]" value="hardbass" id="hardbass">
-                <label class="form-check-label" for="hardbass">Hardbass</label>
-            </div>
-            <div class="form-check">
-                <input class="form-check-input" type="checkbox" name="estilos[]" value="hardcore melódico" id="hardcore">
-                <label class="form-check-label" for="hardcore">Hardcore Melódico</label>
-            </div>
-            <button type="submit" class="btn btn-primary mt-3">Salvar estilos</button>
         </form>
     </div>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
