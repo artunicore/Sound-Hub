@@ -1,5 +1,12 @@
 
 <?php
+session_start();
+
+if (isset($_SESSION['usuario_id'])) {
+    header('Location: app.php');
+    exit;
+}
+
 include 'includes/navbar.php';
 ?>
 <!DOCTYPE html>

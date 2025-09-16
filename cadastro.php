@@ -16,12 +16,20 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         $msg = '<div class="alert alert-danger">As senhas não coincidem.</div>';
     } else {
         $senha_hash = password_hash($senha, PASSWORD_DEFAULT);
-        $sql = "INSERT INTO usuarios (usuario, email, senha, aceitou_termos) VALUES (?, ?, ?, ?)";
+        $tipo = isset($_POST['tipo']) ? $_POST['tipo'] : 'ouvinte';
+        $sql = "INSERT INTO usuarios (usuario, email, senha, aceitou_termos, tipo) VALUES (?, ?, ?, ?, ?)";
         $stmt = $conn->prepare($sql);
         if ($stmt) {
-            $stmt->bind_param("sssi", $usuario, $email, $senha_hash, $termo);
+            $stmt->bind_param("sssis", $usuario, $email, $senha_hash, $termo, $tipo);
             if ($stmt->execute()) {
                 $msg = '<div class="alert alert-success">Cadastro realizado com sucesso!</div>';
+                // Login automático após o cadastro
+                $last_id = $stmt->insert_id;
+                $_SESSION['usuario_id'] = $last_id;
+                $_SESSION['usuario_nome'] = $usuario;
+                $_SESSION['estilos_favoritos'] = ''; // Novo usuário não tem favoritos ainda
+                header('Location: estilos.php');
+                exit;
             } else {
                 $msg = '<div class="alert alert-danger">Erro ao cadastrar: ' . $stmt->error . '</div>';
             }
@@ -87,6 +95,17 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             <div class="mb-3">
                 <label for="senha2" class="form-label">Reescrever Senha</label>
                 <input type="password" class="form-control" id="senha2" name="senha2" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Tipo de Cadastro</label>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="tipo" id="tipo_ouvinte" value="ouvinte" checked>
+                    <label class="form-check-label" for="tipo_ouvinte">Quero ouvir músicas</label>
+                </div>
+                <div class="form-check">
+                    <input class="form-check-input" type="radio" name="tipo" id="tipo_artista" value="artista">
+                    <label class="form-check-label" for="tipo_artista">Sou artista e quero publicar músicas</label>
+                </div>
             </div>
             <div class="form-check mb-3">
                 <input class="form-check-input" type="checkbox" id="termo" name="termo" required>

@@ -11,17 +11,24 @@ if (!isset($_SESSION['usuario_id'])) {
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['estilos'])) {
     $usuario_id = $_SESSION['usuario_id'];
-    $estilos = $_POST['estilos'];
-    // Remove gostos antigos
-    $conn->query("DELETE FROM gostos WHERE usuario_id = $usuario_id");
-    // Insere novos gostos
-    $stmt = $conn->prepare("INSERT INTO gostos (usuario_id, estilo) VALUES (?, ?)");
-    foreach ($estilos as $estilo) {
-        $stmt->bind_param("is", $usuario_id, $estilo);
-        $stmt->execute();
+    $estilos_selecionados = $_POST['estilos'];
+    $estilos_string = implode(',', $estilos_selecionados);
+
+    $sql = "UPDATE usuarios SET estilos_favoritos = ? WHERE id = ?";
+    $stmt = $conn->prepare($sql);
+    if ($stmt) {
+        $stmt->bind_param("si", $estilos_string, $usuario_id);
+        if ($stmt->execute()) {
+            $_SESSION['estilos_favoritos'] = $estilos_string;
+            header('Location: app.php');
+            exit;
+        } else {
+            $msg = '<div class="alert alert-danger">Erro ao salvar os estilos: ' . $stmt->error . '</div>';
+        }
+        $stmt->close();
+    } else {
+        $msg = '<div class="alert alert-danger">Erro na preparação da query.</div>';
     }
-    $stmt->close();
-    $msg = '<div class="alert alert-success">Estilos salvos com sucesso!</div>';
 }
 
 // Estilos disponíveis
@@ -37,10 +44,8 @@ $estilos_lista = [
 
 // Buscar gostos já salvos
 $gostos_salvos = [];
-$usuario_id = $_SESSION['usuario_id'];
-$res = $conn->query("SELECT estilo FROM gostos WHERE usuario_id = $usuario_id");
-while ($row = $res->fetch_assoc()) {
-    $gostos_salvos[] = $row['estilo'];
+if (isset($_SESSION['estilos_favoritos']) && !empty($_SESSION['estilos_favoritos'])) {
+    $gostos_salvos = explode(',', $_SESSION['estilos_favoritos']);
 }
 ?>
 <!DOCTYPE html>
