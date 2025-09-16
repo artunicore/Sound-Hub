@@ -22,11 +22,7 @@ include 'includes/navbar.php';
             color: #fff;
         }
         .hero-section {
-            min-height: 60vh;
-            display: flex;
-            flex-direction: column;
-            justify-content: center;
-            align-items: center;
+            padding: 2rem;
             background: rgba(30,30,47,0.8);
             border-radius: 2rem;
             box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
@@ -66,6 +62,21 @@ include 'includes/navbar.php';
             font-size: 1.1rem;
             padding: 0.6rem 1.5rem;
             border-radius: 2rem;
+        }
+        /* Responsividade */
+        @media (max-width: 768px) {
+            .hero-section {
+                padding: 1.5rem;
+            }
+            .hero-section h1 {
+                font-size: 2.2rem;
+            }
+            .hero-section p {
+                font-size: 1.2rem;
+            }
+            .carousel-img {
+                height: 220px;
+            }
         }
     </style>
 </head>

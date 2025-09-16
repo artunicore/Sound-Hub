@@ -4,6 +4,7 @@ if (session_status() === PHP_SESSION_NONE) {
     session_start();
 }
 ?>
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
   <div class="container-fluid">
     <a class="navbar-brand" href="<?php echo isset($_SESSION['usuario_id']) ? 'app.php' : 'index.php'; ?>">SoundHub</a>
@@ -14,8 +15,8 @@ if (session_status() === PHP_SESSION_NONE) {
       <ul class="navbar-nav me-auto">
         <?php if (isset($_SESSION['usuario_id'])): ?>
 
-          <li class="nav-item orange-500">
-            <a class="nav-link " href="upload.php">para artistas</a>
+          <li class="nav-item">
+            <a class="nav-link orange-500" href="upload.php">para artistas</a>
           </li>
         <?php endif; ?>
       </ul>
@@ -39,3 +40,4 @@ if (session_status() === PHP_SESSION_NONE) {
     </div>
   </div>
 </nav>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/js/bootstrap.bundle.min.js" integrity="sha384-FKyoEForCGlyvwx9Hj09JcYn3nv7wiPVlz7YYwJrWVcXK/BmnVDxM+D2scQbITxI" crossorigin="anonymous"></script>
